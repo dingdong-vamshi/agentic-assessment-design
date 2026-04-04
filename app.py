@@ -6,7 +6,9 @@ import joblib
 import os
 import re
 import html
+import json
 from bs4 import BeautifulSoup
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 import nltk
 from nltk.corpus import stopwords
@@ -245,16 +247,35 @@ elif page == "📊 Difficulty Analysis":
                 labels=["Hard", "Medium", "Easy"],
             )
 
+            # Build and store structured difficulty distribution for Milestone 2 agents
+            easy_count  = int((df["Difficulty"] == "Easy").sum())
+            medium_count = int((df["Difficulty"] == "Medium").sum())
+            hard_count  = int((df["Difficulty"] == "Hard").sum())
+
+            difficulty_distribution = {
+                "Easy": easy_count,
+                "Medium": medium_count,
+                "Hard": hard_count,
+                "total": len(df),
+                "thresholds": {"low": float(q_low), "high": float(q_high)},
+                "percentages": {
+                    "Easy":   round(easy_count   / len(df) * 100, 1),
+                    "Medium": round(medium_count  / len(df) * 100, 1),
+                    "Hard":   round(hard_count    / len(df) * 100, 1),
+                },
+            }
+            st.session_state.difficulty_distribution = difficulty_distribution
+
             # Show metrics
             col1, col2, col3, col4 = st.columns(4)
             with col1:
                 st.metric("Total Questions", len(df))
             with col2:
-                st.metric("🟢 Easy", int((df["Difficulty"] == "Easy").sum()))
+                st.metric("🟢 Easy", easy_count)
             with col3:
-                st.metric("🟡 Medium", int((df["Difficulty"] == "Medium").sum()))
+                st.metric("🟡 Medium", medium_count)
             with col4:
-                st.metric("🔴 Hard", int((df["Difficulty"] == "Hard").sum()))
+                st.metric("🔴 Hard", hard_count)
 
             st.markdown("---")
 
@@ -274,6 +295,18 @@ elif page == "📊 Difficulty Analysis":
             plt.xticks(rotation=0)
             plt.tight_layout()
             st.pyplot(fig)
+
+            st.markdown("---")
+
+            # Export difficulty distribution as JSON (consumed by Milestone 2 agents)
+            st.subheader("📤 Export for Assessment Agent")
+            st.download_button(
+                label="⬇️ Download Difficulty Distribution (JSON)",
+                data=json.dumps(difficulty_distribution, indent=2),
+                file_name="difficulty_distribution.json",
+                mime="application/json",
+                help="This JSON is used as input for the Milestone 2 agentic assessment assistant.",
+            )
 
             st.markdown("---")
 
@@ -498,6 +531,119 @@ elif page == "🤖 Model Evaluation":
 
         st.markdown("---")
         st.info("💡 Upload your data on the **Upload Data** page to see difficulty analysis and student performance insights.")
+
+        # ── Performance Metrics ──
+        st.subheader("📈 Model Performance Metrics")
+ 
+        METRICS_PATH = "models/model_metrics.json"
+        CM_PATH = "models/confusion_matrix.npy"
+ 
+        metrics_data = None
+        cm_matrix = None
+        cm_labels = list(model.classes_)
+        metrics_source = None
+ 
+        # 1) Try pre-saved metrics from notebook training
+        if os.path.exists(METRICS_PATH):
+            with open(METRICS_PATH) as f:
+                metrics_data = json.load(f)
+            if os.path.exists(CM_PATH):
+                cm_matrix = np.load(CM_PATH)
+            metrics_source = "Training test split (saved from notebook)"
+ 
+        # 2) Fall back to computing live on uploaded questions data
+        elif st.session_state.questions_df is not None:
+            df_eval = st.session_state.questions_df.copy()
+            has_score = "Score" in df_eval.columns
+            has_text  = "Title" in df_eval.columns or "Body" in df_eval.columns
+ 
+            if has_score and has_text:
+                with st.spinner("Computing metrics on uploaded data…"):
+                    q_lo = df_eval["Score"].quantile(0.33)
+                    q_hi = df_eval["Score"].quantile(0.66)
+                    df_eval["_label"] = pd.cut(
+                        df_eval["Score"],
+                        bins=[-np.inf, q_lo, q_hi, np.inf],
+                        labels=["Hard", "Medium", "Easy"],
+                    )
+                    df_eval = df_eval.dropna(subset=["_label"])
+ 
+                    title = df_eval["Title"].fillna("") if "Title" in df_eval.columns else pd.Series([""] * len(df_eval))
+                    body  = df_eval["Body"].fillna("")  if "Body"  in df_eval.columns else pd.Series([""] * len(df_eval))
+                    df_eval["_text"]    = title + " " + body
+                    df_eval["_cleaned"] = df_eval["_text"].apply(clean_text_pipeline)
+ 
+                    X_eval  = tfidf_vec.transform(df_eval["_cleaned"])
+                    y_true  = df_eval["_label"].astype(str)
+                    y_pred  = model.predict(X_eval)
+ 
+                    acc    = accuracy_score(y_true, y_pred)
+                    report = classification_report(y_true, y_pred, output_dict=True, zero_division=0)
+                    cm_matrix = confusion_matrix(y_true, y_pred, labels=cm_labels)
+ 
+                    metrics_data   = {"accuracy": acc, "report": report}
+                    metrics_source = "Uploaded questions data (live evaluation)"
+ 
+        if metrics_data is not None:
+            st.caption(f"Source: {metrics_source}")
+            acc    = metrics_data.get("accuracy", 0)
+            report = metrics_data.get("report", {})
+            macro  = report.get("macro avg", {})
+ 
+            # Top-level metric cards
+            m1, m2, m3, m4 = st.columns(4)
+            with m1:
+                st.metric("Accuracy",           f"{acc:.1%}")
+            with m2:
+                st.metric("Precision (macro)",  f"{macro.get('precision', 0):.1%}")
+            with m3:
+                st.metric("Recall (macro)",     f"{macro.get('recall', 0):.1%}")
+            with m4:
+                st.metric("F1 Score (macro)",   f"{macro.get('f1-score', 0):.1%}")
+ 
+            st.markdown("---")
+ 
+            # Per-class breakdown table
+            st.markdown("**Per-Class Metrics**")
+            per_class_rows = []
+            for cls in ["Easy", "Medium", "Hard"]:
+                if cls in report:
+                    per_class_rows.append({
+                        "Class":     cls,
+                        "Precision": f"{report[cls]['precision']:.3f}",
+                        "Recall":    f"{report[cls]['recall']:.3f}",
+                        "F1-Score":  f"{report[cls]['f1-score']:.3f}",
+                        "Support":   int(report[cls]["support"]),
+                    })
+            if per_class_rows:
+                st.dataframe(pd.DataFrame(per_class_rows), use_container_width=True, hide_index=True)
+ 
+            # Confusion matrix heatmap
+            if cm_matrix is not None:
+                st.markdown("---")
+                st.markdown("**Confusion Matrix**")
+                fig_cm, ax_cm = plt.subplots(figsize=(5, 4))
+                im = ax_cm.imshow(cm_matrix, interpolation="nearest", cmap="Blues")
+                plt.colorbar(im, ax=ax_cm)
+                ax_cm.set_xticks(range(len(cm_labels)))
+                ax_cm.set_yticks(range(len(cm_labels)))
+                ax_cm.set_xticklabels(cm_labels, fontsize=10)
+                ax_cm.set_yticklabels(cm_labels, fontsize=10)
+                ax_cm.set_xlabel("Predicted Label", fontsize=11)
+                ax_cm.set_ylabel("True Label", fontsize=11)
+                ax_cm.set_title("Confusion Matrix", fontsize=12, fontweight="bold")
+                thresh = cm_matrix.max() / 2.0
+                for i in range(cm_matrix.shape[0]):
+                    for j in range(cm_matrix.shape[1]):
+                        ax_cm.text(
+                            j, i, str(cm_matrix[i, j]),
+                            ha="center", va="center", fontsize=12, fontweight="bold",
+                            color="white" if cm_matrix[i, j] > thresh else "black",
+                        )
+                plt.tight_layout()
+                st.pyplot(fig_cm)
+        else:
+            st.info("💡 Upload questions data with a **Score** column on the Upload Data page to compute live model metrics, or run the notebook to save pre-computed metrics.")
 
     else:
         st.warning("⚠️ No saved model found. Please train and save the model from the notebook first.")
