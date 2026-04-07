@@ -1,7 +1,6 @@
 try:
     from rag.retriever import retrieve_relevant_principles
 except ImportError:
-    # Fallback if rag module is not yet wired up
     def retrieve_relevant_principles(problems, top_k=3):
         return [
             "A well-balanced exam should have 30% Easy, 40% Medium, 30% Hard questions.",
@@ -11,11 +10,6 @@ except ImportError:
 
 
 def run_retriever_agent(state: dict) -> dict:
-    """
-    Agent 2: Retriever
-    Takes problems from Agent 1, retrieves relevant teaching principles
-    from the knowledge base.
-    """
     problems = state.get("problems", [])
 
     if not problems:

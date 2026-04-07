@@ -25,13 +25,7 @@ def call_llm(prompt):
 
 
 def analyze_difficulty(difficulty_json, use_llm=False):
-    """
-    Agent 1: Analyzer
-    Input:  difficulty_json (dict)
-    Output: list of detected problems
-    """
     problems = []
-
     easy   = difficulty_json.get("Easy", 0)
     medium = difficulty_json.get("Medium", 0)
     hard   = difficulty_json.get("Hard", 0)
@@ -75,22 +69,3 @@ def run_analyzer_agent(state: dict) -> dict:
     problems = analyze_difficulty(difficulty_json)
     state["problems"] = problems
     return state
-
-
-def test_api_connection():
-    api_key = os.getenv("GEMINI_API_KEY")
-    print("Loaded API Key:", api_key)
-    if not api_key:
-        print("API key not found!")
-        return
-    try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content("Say hello in one sentence.")
-        print("API Response:", response.text)
-    except Exception as e:
-        print("API Error:", str(e))
-
-
-if __name__ == "__main__":
-    test_api_connection()

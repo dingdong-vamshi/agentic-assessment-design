@@ -1,0 +1,20 @@
+A well-balanced exam should have 30% Easy, 40% Medium, and 30% Hard questions based on Bloom's Taxonomy.
+Exams with more than 60% Hard questions cause student anxiety and reduce learning outcomes.
+Every exam should test recall (Level 1), understanding (Level 2), and application (Level 3) at minimum.
+Easy questions build student confidence and should never be completely absent.
+Topic coverage should be distributed evenly to avoid over-testing one concept.
+A single topic dominating 70%+ of an exam indicates poor curriculum alignment.
+Bloom's Taxonomy has 6 levels: Remember, Understand, Apply, Analyze, Evaluate, Create.
+Formative assessments should be easier than summative assessments.
+Questions should be reviewed for cultural and linguistic bias regularly.
+Low average scores (below 50%) suggest the exam difficulty is misaligned with student preparation.
+Medium difficulty questions are the most diagnostic — they separate prepared from unprepared students.
+Spiral questioning — revisiting topics at increasing difficulty — improves long-term retention.
+Exams should never test content that was not explicitly taught in the course.
+A mix of question types (MCQ, short answer, applied) tests deeper understanding than MCQs alone.
+Students perform better when exams have a clear easy warm-up section at the start.
+Difficulty should generally increase through the exam, not be randomly distributed.
+Over-reliance on memorization questions reduces higher-order thinking development.
+Assessment design should align with stated learning objectives (constructive alignment).
+Peer-reviewed research shows spaced repetition improves retention by up to 80%.
+An exam's reliability increases when it covers a broad range of topics with consistent difficulty spread.
