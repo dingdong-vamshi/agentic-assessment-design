@@ -13,7 +13,6 @@ def recomend_agent(state: dict) -> dict:
         Give exactly 3 clear, actionable recommendations to improve the exam.
         Rules:
         - Be concise
-        - Each recommendation must address a problem
         - Output as a numbered list"""
     client = genai.Client()
     response = client.models.generate_content(
