@@ -10,3 +10,6 @@ fpdf2
 langgraph
 python-dotenv
 google-genai==1.70.0
+joblib
+sentence-transformers
+groq

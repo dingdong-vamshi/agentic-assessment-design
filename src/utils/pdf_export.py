@@ -1,4 +1,17 @@
+import re
 from fpdf import FPDF
+
+
+def _sanitize(text: str) -> str:
+    """Remove characters that can't be encoded in latin-1 (fpdf default)."""
+    return text.encode("latin-1", errors="replace").decode("latin-1")
+
+
+def _strip_markdown(text: str) -> str:
+    """Remove common markdown formatting like **bold** and *italic*."""
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)  # **bold** → bold
+    text = re.sub(r"\*(.+?)\*", r"\1", text)        # *italic* → italic
+    return text
 
 
 def create_pdf_report(report_text: str) -> bytes:
@@ -7,33 +20,48 @@ def create_pdf_report(report_text: str) -> bytes:
     Uses fpdf2.
     """
     pdf = FPDF()
+    pdf.set_margins(left=15, top=15, right=15)
     pdf.add_page()
 
     # Title
     pdf.set_font("Helvetica", style="B", size=18)
-    pdf.cell(0, 12, txt="Assessment Quality Report", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(w=0, h=12, text="Assessment Quality Report", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(6)
 
     lines = report_text.split("\n")
 
     for line in lines:
-        if line.startswith("# "):
-            # H1 — skip, already rendered as title
+        raw = line.strip()
+        if not raw:
+            pdf.ln(3)
+            continue
+
+        text = _strip_markdown(_sanitize(raw))
+
+        try:
+            # Reset X to left margin before every line
+            pdf.set_x(pdf.l_margin)
+
+            if raw.startswith("# "):
+                # H1 — already rendered as title above, skip
+                continue
+            elif raw.startswith("## "):
+                pdf.ln(4)
+                pdf.set_font("Helvetica", style="B", size=13)
+                heading = text.replace("## ", "", 1)
+                pdf.cell(w=0, h=8, text=heading, new_x="LMARGIN", new_y="NEXT")
+            elif raw.startswith("- "):
+                pdf.set_font("Helvetica", size=11)
+                bullet_text = "  \u2022 " + text[2:]
+                pdf.multi_cell(w=0, h=6, text=bullet_text)
+            elif raw.startswith("*") and raw.endswith("*"):
+                pdf.set_font("Helvetica", style="I", size=10)
+                pdf.multi_cell(w=0, h=6, text=text)
+            else:
+                pdf.set_font("Helvetica", size=11)
+                pdf.multi_cell(w=0, h=6, text=text)
+        except Exception:
+            # Skip any line that still can't render
             pass
-        elif line.startswith("## "):
-            pdf.ln(4)
-            pdf.set_font("Helvetica", style="B", size=13)
-            pdf.multi_cell(0, 8, txt=line.replace("## ", "").strip())
-        elif line.startswith("- "):
-            pdf.set_font("Helvetica", size=11)
-            pdf.multi_cell(0, 6, txt="  \u2022 " + line[2:].strip())
-        elif line.startswith("*") and line.endswith("*"):
-            pdf.set_font("Helvetica", style="I", size=10)
-            pdf.multi_cell(0, 6, txt=line.strip("*").strip())
-        elif line.strip() == "":
-            pdf.ln(2)
-        else:
-            pdf.set_font("Helvetica", size=11)
-            pdf.multi_cell(0, 6, txt=line.strip())
 
     return bytes(pdf.output())
