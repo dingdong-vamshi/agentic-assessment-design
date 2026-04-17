@@ -1249,6 +1249,16 @@ elif page == "Assessment Assistant":
                             "score": float(row["Score"]) if pd.notnull(row["Score"]) else 0.0,
                             "difficulty": row.get("Difficulty", "Unknown")
                         }
+            if "questions_df" in st.session_state and st.session_state.questions_df is not None:
+                qdf = st.session_state.questions_df
+                if "Title" in qdf.columns and "Score" in qdf.columns:
+                    qdf_sorted = qdf.sort_values(by="Score")
+                    extremes   = pd.concat([qdf_sorted.head(3), qdf_sorted.tail(2)]).drop_duplicates()
+                    for _, row in extremes.iterrows():
+                        topic_analysis[row["Title"]] = {
+                            "score": float(row["Score"]) if pd.notnull(row["Score"]) else 0.0,
+                            "difficulty": row.get("Difficulty", "Unknown")
+                        }
 
             state = {"difficulty": difficulty_dict, "topic_analysis": topic_analysis}
 
