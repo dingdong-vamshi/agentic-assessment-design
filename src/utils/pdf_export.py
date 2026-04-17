@@ -71,6 +71,9 @@ def create_pdf_report(report_text: str) -> bytes:
                 pdf.set_font("Helvetica", size=BODY_TEXT_SIZE)
                 content = _sanitize(_strip_markdown(raw[2:].strip()))
                 pdf.multi_cell(w=0, h=6, text="  \u2022  " + content)
+            elif re.match(r"^\d+[.)]", raw):
+                pdf.set_font("Helvetica", size=BODY_TEXT_SIZE)
+                pdf.multi_cell(w=0, h=6, text="  " + text)
             elif raw.startswith("*") and raw.endswith("*"):
                 pdf.set_font("Helvetica", style="I", size=10)
                 pdf.multi_cell(w=0, h=6, text=text)
