@@ -68,9 +68,9 @@ def create_pdf_report(report_text: str) -> bytes:
                 heading = _sanitize(_strip_markdown(raw[3:].strip()))
                 pdf.cell(w=0, h=8, text=heading, new_x="LMARGIN", new_y="NEXT")
             elif raw.startswith("- "):
-                pdf.set_font("Helvetica", size=11)
-                bullet_text = "  \u2022 " + text[2:]
-                pdf.multi_cell(w=0, h=6, text=bullet_text)
+                pdf.set_font("Helvetica", size=BODY_TEXT_SIZE)
+                content = _sanitize(_strip_markdown(raw[2:].strip()))
+                pdf.multi_cell(w=0, h=6, text="  \u2022  " + content)
             elif raw.startswith("*") and raw.endswith("*"):
                 pdf.set_font("Helvetica", style="I", size=10)
                 pdf.multi_cell(w=0, h=6, text=text)
