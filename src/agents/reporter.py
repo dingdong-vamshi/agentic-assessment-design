@@ -34,9 +34,10 @@ def generate_report(state: dict) -> str:
 Based on the provided metrics and AI analysis, the assessment has been evaluated across multiple dimensions including difficulty balancing, topic coverage, and cognitive load. The findings highlight areas of improvement to ensure a fairer and more effective evaluation of student competencies.
 
 ## 2. Question Difficulty Distribution
-- **Easy:** {difficulty_dist.get("Easy", "N/A")}
-- **Medium:** {difficulty_dist.get("Medium", "N/A")}
-- **Hard:** {difficulty_dist.get("Hard", "N/A")}
+- **Easy:** {get_pct("Easy")}
+- **Medium:** {get_pct("Medium")}
+- **Hard:** {get_pct("Hard")}
+- **Total Questions:** {total}
 
 ## 3. Identified Learning Gaps & Exam Issues
 """
