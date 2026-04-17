@@ -861,7 +861,7 @@ elif page == "Difficulty Analysis":
             with col_down:
                 st.markdown('<p class="section-header">Export</p>', unsafe_allow_html=True)
                 st.download_button(
-                    label=f"{icon('download', 14, '#1C1C1E')} Download JSON",
+                    label="⬇ Download JSON",
                     data=json.dumps(difficulty_distribution, indent=2),
                     file_name="difficulty_distribution.json",
                     mime="application/json",
@@ -1249,8 +1249,22 @@ elif page == "Assessment Assistant":
                             "score": float(row["Score"]) if pd.notnull(row["Score"]) else 0.0,
                             "difficulty": row.get("Difficulty", "Unknown")
                         }
+            if "questions_df" in st.session_state and st.session_state.questions_df is not None:
+                qdf = st.session_state.questions_df
+                if "Title" in qdf.columns and "Score" in qdf.columns:
+                    qdf_sorted = qdf.sort_values(by="Score")
+                    extremes   = pd.concat([qdf_sorted.head(3), qdf_sorted.tail(2)]).drop_duplicates()
+                    for _, row in extremes.iterrows():
+                        topic_analysis[row["Title"]] = {
+                            "score": float(row["Score"]) if pd.notnull(row["Score"]) else 0.0,
+                            "difficulty": row.get("Difficulty", "Unknown")
+                        }
 
-            state = {"difficulty": difficulty_dict, "topic_analysis": topic_analysis}
+            state = {
+                "difficulty": difficulty_dict, 
+                "topic_analysis": topic_analysis,
+                "metadata": {"has_topic_data": len(topic_analysis) > 0}
+            }
 
             with st.status("Running 4-Agent Pipeline…", expanded=True) as pipeline_status:
                 st.write("Agent 1 — Analyzer: Detecting difficulty problems…")
@@ -1313,13 +1327,17 @@ elif page == "Assessment Assistant":
 
         try:
             from utils.pdf_export import create_pdf_report
-            pdf_bytes = create_pdf_report(st.session_state.last_report)
+            pdf_bytes = create_pdf_report(
+                st.session_state.last_report,
+                state=st.session_state.get("last_report_state")
+            )
             st.download_button(
-                label="Download PDF Report",
+                label="⬇ Download PDF Report",
                 data=pdf_bytes,
                 file_name="Assessment_Report.pdf",
                 mime="application/pdf",
             )
+            st.markdown("<div style='margin-bottom: 50px;'></div>", unsafe_allow_html=True)
         except Exception as pdf_err:
             st.warning(f"PDF export unavailable: {pdf_err}")
 

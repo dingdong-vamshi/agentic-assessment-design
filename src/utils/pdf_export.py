@@ -1,16 +1,33 @@
 import re
 from fpdf import FPDF
 
+# PDF Layout Constants
+LEFT_MARGIN = 15
+TOP_MARGIN  = 15
+RIGHT_MARGIN = 15
+SECTION_TITLE_SIZE = 13
+BODY_TEXT_SIZE = 11
+
 
 def _sanitize(text: str) -> str:
-    """Remove characters that can't be encoded in latin-1 (fpdf default)."""
+    """
+    Remove or replace characters that can't be encoded in latin-1.
+    FPDF (the default font) requires latin-1 encoding. This function 
+    ensures that emojis or higher-order unicode characters don't crash 
+    the PDF generation.
+    """
     return text.encode("latin-1", errors="replace").decode("latin-1")
 
 
 def _strip_markdown(text: str) -> str:
-    """Remove common markdown formatting like **bold** and *italic*."""
-    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)  # **bold** → bold
-    text = re.sub(r"\*(.+?)\*", r"\1", text)        # *italic* → italic
+    """
+    Remove basic Markdown syntax from a string for plain-text rendering.
+    Currently handles:
+    - **Bold** (double asterisks)
+    - *Italic* (single asterisks)
+    """
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)  # Handle bold
+    text = re.sub(r"\*(.+?)\*", r"\1", text)        # Handle italic
     return text
 
 
@@ -20,7 +37,7 @@ def create_pdf_report(report_text: str) -> bytes:
     Uses fpdf2.
     """
     pdf = FPDF()
-    pdf.set_margins(left=15, top=15, right=15)
+    pdf.set_margins(left=LEFT_MARGIN, top=TOP_MARGIN, right=RIGHT_MARGIN)
     pdf.add_page()
 
     # Title
@@ -47,18 +64,22 @@ def create_pdf_report(report_text: str) -> bytes:
                 continue
             elif raw.startswith("## "):
                 pdf.ln(4)
-                pdf.set_font("Helvetica", style="B", size=13)
-                heading = text.replace("## ", "", 1)
+                pdf.set_font("Helvetica", style="B", size=SECTION_TITLE_SIZE)
+                heading = _sanitize(_strip_markdown(raw[3:].strip()))
                 pdf.cell(w=0, h=8, text=heading, new_x="LMARGIN", new_y="NEXT")
             elif raw.startswith("- "):
-                pdf.set_font("Helvetica", size=11)
-                bullet_text = "  \u2022 " + text[2:]
-                pdf.multi_cell(w=0, h=6, text=bullet_text)
-            elif raw.startswith("*") and raw.endswith("*"):
+                pdf.set_font("Helvetica", size=BODY_TEXT_SIZE)
+                content = _sanitize(_strip_markdown(raw[2:].strip()))
+                pdf.multi_cell(w=0, h=6, text="  \u2022  " + content)
+            elif re.match(r"^\d+[.)]", raw):
+                pdf.set_font("Helvetica", size=BODY_TEXT_SIZE)
+                pdf.multi_cell(w=0, h=6, text="  " + text)
+            elif raw.startswith("*") and raw.endswith("*") and not raw.startswith("**"):
                 pdf.set_font("Helvetica", style="I", size=10)
-                pdf.multi_cell(w=0, h=6, text=text)
+                italic_text = _sanitize(raw.strip("*").strip())
+                pdf.multi_cell(w=0, h=6, text=italic_text)
             else:
-                pdf.set_font("Helvetica", size=11)
+                pdf.set_font("Helvetica", size=BODY_TEXT_SIZE)
                 pdf.multi_cell(w=0, h=6, text=text)
         except Exception:
             # Skip any line that still can't render
