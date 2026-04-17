@@ -37,7 +37,7 @@ def create_pdf_report(report_text: str) -> bytes:
     Uses fpdf2.
     """
     pdf = FPDF()
-    pdf.set_margins(left=15, top=15, right=15)
+    pdf.set_margins(left=LEFT_MARGIN, top=TOP_MARGIN, right=RIGHT_MARGIN)
     pdf.add_page()
 
     # Title
