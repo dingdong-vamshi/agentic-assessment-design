@@ -1,6 +1,13 @@
 import re
 from fpdf import FPDF
 
+# PDF Layout Constants
+LEFT_MARGIN = 15
+TOP_MARGIN  = 15
+RIGHT_MARGIN = 15
+SECTION_TITLE_SIZE = 13
+BODY_TEXT_SIZE = 11
+
 
 def _sanitize(text: str) -> str:
     """
