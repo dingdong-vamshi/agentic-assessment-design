@@ -3,14 +3,24 @@ from fpdf import FPDF
 
 
 def _sanitize(text: str) -> str:
-    """Remove characters that can't be encoded in latin-1 (fpdf default)."""
+    """
+    Remove or replace characters that can't be encoded in latin-1.
+    FPDF (the default font) requires latin-1 encoding. This function 
+    ensures that emojis or higher-order unicode characters don't crash 
+    the PDF generation.
+    """
     return text.encode("latin-1", errors="replace").decode("latin-1")
 
 
 def _strip_markdown(text: str) -> str:
-    """Remove common markdown formatting like **bold** and *italic*."""
-    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)  # **bold** → bold
-    text = re.sub(r"\*(.+?)\*", r"\1", text)        # *italic* → italic
+    """
+    Remove basic Markdown syntax from a string for plain-text rendering.
+    Currently handles:
+    - **Bold** (double asterisks)
+    - *Italic* (single asterisks)
+    """
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)  # Handle bold
+    text = re.sub(r"\*(.+?)\*", r"\1", text)        # Handle italic
     return text
 
 
