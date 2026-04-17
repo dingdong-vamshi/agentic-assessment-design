@@ -42,6 +42,11 @@ def _fallback_recommendations(problems: list, state: dict = None) -> list:
 
 
 def recommend_agent(state: dict) -> dict:
+    """
+    Agent 3 - Recommender.
+    Generates actionable recommendations based on identified problems and 
+    retrieved pedagogical principles.
+    """
     problems = state.get("problems", [])
     principles = state.get("principles", [])
     topic_analysis = state.get("topic_analysis", {})
