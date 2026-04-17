@@ -1329,7 +1329,7 @@ elif page == "Assessment Assistant":
             from utils.pdf_export import create_pdf_report
             pdf_bytes = create_pdf_report(st.session_state.last_report)
             st.download_button(
-                label="Download PDF Report",
+                label="⬇ Download PDF Report",
                 data=pdf_bytes,
                 file_name="Assessment_Report.pdf",
                 mime="application/pdf",
