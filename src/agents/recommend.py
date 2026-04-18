@@ -70,9 +70,13 @@ def recommend_agent(state: dict) -> dict:
         Task:
         Give exactly 3 clear, actionable recommendations to improve the exam.
         Rules:
-        - Be concise
-        - Be specific! Link recommendations directly to specific topics where students are struggling based on the performance data.
-        - Output as a numbered list"""
+        - Be specific! Link recommendations to the actual topic data provided above
+        - Output as a numbered list
+        - STRICT: Do not invent statistics, percentages, or scores not present in the data above
+        - STRICT: Do not reference topics that are not listed in the Topic-Level Performance Data
+        - STRICT: If topic data says "None provided", give only general structural recommendations
+        - STRICT: Do not claim specific student failure rates unless the data explicitly shows them
+        - Base every recommendation only on the Problems and Topic Data given above"""
 
     try:
         if not _GROQ_AVAILABLE:

@@ -18,3 +18,28 @@ Over-reliance on memorization questions reduces higher-order thinking developmen
 Assessment design should align with stated learning objectives (constructive alignment).
 Peer-reviewed research shows spaced repetition improves retention by up to 80%.
 An exam's reliability increases when it covers a broad range of topics with consistent difficulty spread.
+Higher-order thinking questions (Analyze, Evaluate, Create) should make up at least 25% of a summative exam.
+Questions at the Remember level should not exceed 20% in an undergraduate exam.
+Application-level questions are the most effective at predicting real-world competency.
+Bloom's levels should increase progressively throughout the exam, starting with recall.
+An exam weighted only toward lower Bloom levels fails to assess true understanding.
+A topic where more than 60% of students score below 50% indicates a critical learning gap.
+Repeated failure on a specific topic suggests it requires re-teaching, not just re-testing.
+Learning gaps identified in exams should inform future lecture and lab design.
+If a topic has both high difficulty and low student scores, it is likely undertaught.
+Clustering questions by topic reveals which curriculum areas need more coverage.
+Questions should be reviewed annually to remove culturally biased language.
+Exams should not disadvantage students based on language proficiency unrelated to the subject.
+A well-designed exam should be completable by a prepared student within the allotted time.
+Partial credit on complex questions reduces all-or-nothing anxiety and improves fairness.
+Exam instructions should be unambiguous to avoid penalizing students for misunderstanding the format.
+An exam is only valid if its questions directly map to the stated learning objectives.
+Content validity is measured by how well the exam covers the full range of taught material.
+High exam reliability means students would score similarly if the exam were repeated.
+Piloting questions on a small group before full deployment improves overall exam quality.
+An exam that covers only the last few weeks of content lacks content validity.
+Students who perform well on Easy questions but fail Hard ones likely have recall but lack application skills.
+A bimodal score distribution suggests the class has two distinct performance groups.
+High variance in scores on a single question suggests the question is ambiguous or poorly worded.
+Questions with near-zero variance (everyone passes or fails) provide no diagnostic value.
+Tracking performance trends over multiple exams reveals long-term learning trajectories.
