@@ -24,22 +24,17 @@ def _strip_markdown(text: str) -> str:
     Remove basic Markdown syntax from a string for plain-text rendering.
     Currently handles:
     - **Bold** (double asterisks)
-    - *Italic* (single asterisks)
+    - *Italic* (single asterisks) 
     """
     text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)  # Handle bold
     text = re.sub(r"\*(.+?)\*", r"\1", text)        # Handle italic
     return text
 
 
-def create_pdf_report(report_text: str, state: dict = None) -> bytes:
+def create_pdf_report(report_text: str) -> bytes:
     """
     Converts a Markdown-like report text into a PDF and returns its bytes.
     Uses fpdf2.
-
-    Args:
-        report_text: Markdown-formatted report string from the reporter agent.
-        state:       Optional pipeline state dict (passed for compatibility;
-                     all data is already embedded in report_text).
     """
     pdf = FPDF()
     pdf.set_margins(left=LEFT_MARGIN, top=TOP_MARGIN, right=RIGHT_MARGIN)
@@ -90,4 +85,4 @@ def create_pdf_report(report_text: str, state: dict = None) -> bytes:
             # Skip any line that still can't render
             pass
 
-    return bytes(pdf.output())
+    return bytes(pdf.output()) 

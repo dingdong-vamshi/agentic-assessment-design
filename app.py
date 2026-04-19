@@ -1260,11 +1260,21 @@ elif page == "Assessment Assistant":
                             "difficulty": row.get("Difficulty", "Unknown")
                         }
 
+            # Enrich state with extra metrics
             state = {
                 "difficulty": difficulty_dict, 
                 "topic_analysis": topic_analysis,
-                "metadata": {"has_topic_data": len(topic_analysis) > 0}
+                "metadata": {
+                    "has_topic_data": len(topic_analysis) > 0,
+                    "total_questions": len(st.session_state.questions_df) if st.session_state.questions_df is not None else 0,
+                }
             }
+
+            # If response data is available, add global stats
+            if st.session_state.responses_df is not None:
+                rdf = st.session_state.responses_df
+                state["metadata"]["avg_student_score"] = round(rdf["Score"].mean(), 2) if "Score" in rdf.columns else "N/A"
+                state["metadata"]["total_responses"] = len(rdf)
 
             with st.status("Running 4-Agent Pipeline…", expanded=True) as pipeline_status:
                 st.write("Agent 1 — Analyzer: Detecting difficulty problems…")
