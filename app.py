@@ -1273,7 +1273,11 @@ elif page == "Assessment Assistant":
             # If response data is available, add global stats
             if st.session_state.responses_df is not None:
                 rdf = st.session_state.responses_df
-                state["metadata"]["avg_student_score"] = round(rdf["Score"].mean(), 2) if "Score" in rdf.columns else "N/A"
+                if "Score" in rdf.columns:
+                    scores_num = pd.to_numeric(rdf["Score"], errors="coerce")
+                    state["metadata"]["avg_student_score"] = round(scores_num.mean(), 2) if not scores_num.isna().all() else "N/A"
+                else:
+                    state["metadata"]["avg_student_score"] = "N/A"
                 state["metadata"]["total_responses"] = len(rdf)
 
             with st.status("Running 4-Agent Pipeline…", expanded=True) as pipeline_status:
